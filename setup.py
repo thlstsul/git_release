@@ -1,19 +1,18 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 
 setup(
-    name="git-release-tool",
+    name="git-release",
     version="0.1.0",
     description="Git项目自动发布工具 - 自动更新版本号、提交、打标签、推送",
     author="thlstsul",
     author_email="zhouzm5@qq.com",
-    packages=find_packages(),
+    py_modules=["git_release"],
     entry_points={
         "console_scripts": [
-            "git-release=git_release.main:main",
+            "git-release=git_release:main",
         ],
     },
     install_requires=[],
-    python_requires=">=3.6",
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
@@ -25,4 +24,5 @@ setup(
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
     ],
+    python_requires=">=3.6",
 )
