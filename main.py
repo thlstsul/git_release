@@ -262,6 +262,10 @@ class GitReleaseManager:
         print(f"✅ 发布完成! 版本 {new_version} 已准备就绪")
         print("=" * 50)
 
+def validate_version(version: str) -> bool:
+    """验证语义化版本号格式"""
+    pattern = r'^\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?(\+[a-zA-Z0-9.-]+)?$'
+    return re.match(pattern, version) is not None
 
 def main():
     parser = argparse.ArgumentParser(description='Git项目自动发布脚本')
@@ -274,7 +278,7 @@ def main():
     args = parser.parse_args()
 
     # 验证版本号格式 (简单验证)
-    if not re.match(r'^\d+\.\d+\.\d+$', args.version):
+    if not validate_version(args.version):
         print("错误: 版本号格式应为 x.y.z (例如: 1.2.3)")
         sys.exit(1)
 
