@@ -1,0 +1,7 @@
+[project]
+name = "git-release"
+version = "1.2.3"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = []
