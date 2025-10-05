@@ -196,6 +196,30 @@ class GitReleaseManager:
             self.run_command(["git", "push", remote, "--tags"])
             print(f"✓ 推送标签到 {remote}")
 
+    def tag_exists(self, tag_name: str) -> bool:
+        """检查标签是否存在"""
+        output = self.run_command(["git", "tag", "-l", tag_name])
+        return tag_name in output.split('\n')
+
+    def delete_tag(self, tag_name: str) -> bool:
+        """删除本地和远程标签"""
+        print(f"删除标签: {tag_name}")
+
+        # 删除本地标签
+        self.run_command(["git", "tag", "-d", tag_name])
+
+        remotes = self.get_remote_repos()
+        if not remotes:
+            print("⚠ 没有找到远程仓库")
+            return True
+
+        # 删除所有远程仓库的标签
+        for remote in remotes:
+            self.run_command(["git", "push", remote, f":refs/tags/{tag_name}"])
+            print(f"✓ 从远程 {remote} 删除标签 {tag_name}")
+
+        return True
+
     def release(self, new_version: str, commit_message: Optional[str] = None,
                 branch: Optional[str] = None, skip_push: bool = False) -> None:
         """执行完整的发布流程"""
@@ -209,7 +233,15 @@ class GitReleaseManager:
             sys.exit(1)
         print("✓ 工作区干净")
 
-        # 2. 更新版本文件
+        # 2. 检查标签是否存在
+        tag_name = f"v{new_version}"
+        if self.tag_exists(tag_name):
+            print(f"标签 {tag_name} 已存在，强制重新发布")
+            if not self.delete_tag(tag_name):
+                print("✗ 删除标签失败，请手动删除标签后重试")
+                sys.exit(1)
+
+        # 3. 更新版本文件
         updated_count = self.update_version_files(new_version)
         if updated_count == 0:
             print("⚠ 没有文件被更新，是否继续？(y/N)")
@@ -217,10 +249,10 @@ class GitReleaseManager:
                 print("发布流程已取消")
                 return
 
-        # 3. 提交和打标签
+        # 4. 提交和打标签
         self.git_commit_and_tag(new_version, commit_message)
 
-        # 4. 推送到所有远程仓库
+        # 5. 推送到所有远程仓库
         if not skip_push:
             self.push_to_all_remotes(branch)
         else:
