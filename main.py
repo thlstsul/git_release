@@ -169,6 +169,9 @@ class GitReleaseManager:
         self.run_command(["git", "commit", "-m", commit_message])
         print(f"✓ 提交更改: {commit_message}")
 
+        self.git_tag(new_version)
+
+    def git_tag(self, new_version: str) -> None:
         # 创建标签
         tag_name = f"v{new_version}"
         self.run_command(
@@ -243,14 +246,11 @@ class GitReleaseManager:
 
         # 3. 更新版本文件
         updated_count = self.update_version_files(new_version)
-        if updated_count == 0:
-            print("⚠ 没有文件被更新，是否继续？(y/N)")
-            if input().lower() != 'y':
-                print("发布流程已取消")
-                return
-
-        # 4. 提交和打标签
-        self.git_commit_and_tag(new_version, commit_message)
+        if updated_count != 0:
+            # 4. 提交和打标签
+            self.git_commit_and_tag(new_version, commit_message)
+        else:
+            self.git_tag(new_version)
 
         # 5. 推送到所有远程仓库
         if not skip_push:
